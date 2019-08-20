@@ -1,0 +1,24 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.0",
+  "body": [
+    {
+      "type": "TextBlock",
+      "weight": "bolder",
+      "text": "Hello, this is sample bot. What can I do for you?",
+      "isSubtitle": false
+    },
+    {
+      "type": "TextBlock",
+      "text": "Try below:",
+      "separator": true,
+      "spacing": "medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": "- hello\r- sum\r- memory\r- flight",
+      "wrap": true
+    }
+  ]
+}
