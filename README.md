@@ -1,4 +1,4 @@
-# Motivation Simple bot made simple
+# Motivation: Simple bot made simple
 Zyin.IntentBot is an Asp.Net Core 2 extension library for Botframework V4 to help you build "simple" bots in a simple way.
 
 A "simple bot" can be any bot which:
