@@ -27,6 +27,7 @@
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // Add IOptions for required config objects.
+            // These are optional configs. For local devevelopment they are all empty.
             services.Configure<BotConfig>(Configuration);
             services.Configure<LuisConfig>(Configuration);
             services.Configure<OAuthConfig>(Configuration);
@@ -36,6 +37,8 @@
 
             // Add intent bot
             services.AddIntentBot<SampleBot, SampleUserInfo>();
+            // Or just below if you don't have any user state to save
+            // services.AddIntentBot<SampleBot>();
 
             // Register intents and intent factory
             services.AddSimpleIntent<FallbackContext, SampleFallbackHandler>();
