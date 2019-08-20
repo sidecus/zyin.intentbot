@@ -76,15 +76,14 @@ namespace Zyin.IntentBot.Prompt
 
             foreach (var prop in properties)
             {
-                object[] attrs = prop.GetCustomAttributes(true);
-                var promptAttribute = attrs.FirstOrDefault(a => a is PromptPropertyAttribute) as PromptPropertyAttribute;
+                var promptAttribute = prop.GetCustomAttributes(true).OfType<PromptPropertyAttribute>().FirstOrDefault();
                 if (promptAttribute == null)
                 {
                     // Not a property which needs prompting, skip
                     continue;
                 }
 
-                // Add property
+                // Add prompt property
                 info.Add(new PromptPropertyInfo(prop, promptAttribute));
             }
 

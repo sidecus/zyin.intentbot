@@ -65,12 +65,7 @@ namespace Zyin.IntentBot.Intent
             this.logger = logger;
 
             this.knownIntents = intents.Where(x => !x.IsFallbackIntent).ToList();
-            this.fallbackIntent = intents.Last(x => x.IsFallbackIntent);
-
-            if (this.fallbackIntent == null)
-            {
-                throw new InvalidOperationException("Please provide a fall back intent!");
-            }
+            this.fallbackIntent = intents.LastOrDefault(x => x.IsFallbackIntent) ?? throw new InvalidOperationException("No fall back intent registered!");
         }
 
         /// <summary>
@@ -97,7 +92,7 @@ namespace Zyin.IntentBot.Intent
                 {
                     if (knownIntent.IsMatching(intentString))
                     {
-                        this.logger.LogInformation($"known intent {intentString} - processing with dialog {knownIntent.DialogId}");
+                        this.logger.LogInformation($"Found intent {intentString}. dialog is {knownIntent.DialogId}");
 
                         // Return a known intent context
                         return knownIntent;

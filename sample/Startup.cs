@@ -35,12 +35,12 @@
             // Add intent service
             services.AddSingleton<IIntentService, SampleIntentService>();
 
-            // Add intent bot
+            // Add intent bot with user state.
             services.AddIntentBot<SampleBot, SampleUserInfo>();
             // Or just below if you don't have any user state to save
             // services.AddIntentBot<SampleBot>();
 
-            // Register intents and intent factory
+            // Register intents
             services.AddSimpleIntent<FallbackContext, SampleFallbackHandler>();
             services.AddSimpleIntent<GreetingsContext, GreetingsIntentHandler>();
             services.AddUserInputIntent<AddNumberIntentContext, AddNumberIntentHandler>();

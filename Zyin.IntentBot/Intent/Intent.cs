@@ -59,7 +59,7 @@ namespace Zyin.IntentBot.Intent
         /// <summary>
         /// Whether the intent is a fallback intent.
         /// </summary>
-        private static readonly bool IsFallback = typeof(TContext).IsSubclassOf(typeof(AbstractFallbackContext));
+        private static readonly bool IsFallback = typeof(TContext).IsSubclassOf(typeof(BaseFallbackContext));
 
         /// <summary>
         /// Initializes a new intent which requires user input

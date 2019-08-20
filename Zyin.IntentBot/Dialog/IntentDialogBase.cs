@@ -138,8 +138,9 @@ namespace Zyin.IntentBot.Dialog
 
             if (intentContext != null)
             {
-                // Process request
-                await this.intentHandlerFactory.ProcessIntentAsync(stepContext.Context, intentContext, cancellationToken);
+                // Get corresponding handler and process the intent
+                var handler = this.intentHandlerFactory.GetIntentHandler(intentContext);
+                await handler.ProcessIntentAsync(stepContext.Context, intentContext, cancellationToken);
             }
             else
             {            
