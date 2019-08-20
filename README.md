@@ -23,7 +23,7 @@ Let's see. As a prerequisite, you need to implement IIntentService which does th
     public override string IntentName => SampleIntentService.Intent_Greetings;
   }
 ```
-2. Define a custom handler for the intent which does the real work
+2. Define a custom handler for the intent which does the real work, and override ```ProcessIntentInternalAsync```.
 ```
   public class GreetingsIntentHandler : IntentHandler<GreetingsContext>
 ```
