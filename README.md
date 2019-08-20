@@ -51,7 +51,7 @@ Just implement and register a handler with built in ```FallbackContext```.
 ```
 
 ## One of my intent requires user authentication
-OK. If you are using Azure Bot Servie OAuthCard - simply inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```.
+OK. If you are using Azure Bot Servie OAuthPrompt - simply inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```. Now your intent will trigger the OAuth flow (you'll need to specify the ```OAuthConnectionName``` setting in appSettings.json. I am sure you can figure that part out.
 
 Check the sample project for more details, especially Startup.cs and files under /sample/Areas.
 
