@@ -1,21 +1,20 @@
 # Motivation Simple bot made simple
-Zyin.IntentBot is a Botframework V4 extension library to help you build "simple" in a simple way.
+Zyin.IntentBot is a .Net Standard 2.0 and Asp.Net Core 2 extension library for Botframework V4 to help you build "simple" bots in a simple way.
 
-In my mind a simple bot can be any bot which:
+A "simple bot" can be any bot which:
 - Takes a user intent and gives back an answer, or takes an action for the user
 - Takes an intent, asks uesr for more inputs, and then takes an action
 - Can require authentication as needed
-- Can fall back to certain actions if the intent is unknown
+- Falls back to certain actions if the intent is unknown
 
-This is definitely doable via Botframework V4, however, it requires a lot of scaffolding and some good understanding about BotFramework before you can even start. For example, you'll have to write custom dialogs for your main flow; you'll likely have to deal with intent handling and intent fallback with lots of if/else branches; you'll have to use WaterfallSteps for user input collection.
+Building these with botframework requires quite some scaffolding and good understanding about BotFramework itself before you can even start. For example, you'll have to write custom dialogs for your main flow; you'll likely have to deal with intent handling and intent fallback with lots of if/else branches; you'll have to use WaterfallSteps for each user input collection scenarios.
 
-That's **not simple**.
+That's really **not** simple.
 
-I started writing some code to help reduce repeated work for myself. Later I realize it might be helpful to others as well.
+I started writing some code to reduce repeated work for myself when creating simple bots. Now I think it might be helpful to others as well.
 
-# Show me how simple it is
-## Implement an IIntentService which does the intent parsing.
-This is to map user input to intent. You can use built in ```LuisService``` if you want.
+# Is it really simple?
+Let's see. As a prerequisite, you need to implement IIntentService which does the intent parsing. This is to map user input to known intent name string. You can use built in ```LuisService``` if you want.
 ## Identify an intent and take an action
 1. Define a custom intent context. Override the IntentName getter.
 ```
@@ -54,5 +53,6 @@ Just implement and register a handler with built in ```FallbackContext```.
 ## One of my intent requires user authentication
 OK. If you are using Azure Bot Servie OAuthCard - simply inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```.
 
-I hope you enjoy.
+
+# Enjoy!
 
