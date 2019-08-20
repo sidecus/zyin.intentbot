@@ -1,5 +1,5 @@
 # Motivation Simple bot made simple
-Zyin.IntentBot is a .Net Standard 2.0 and Asp.Net Core 2 extension library for Botframework V4 to help you build "simple" bots in a simple way.
+Zyin.IntentBot is an Asp.Net Core 2 extension library for Botframework V4 to help you build "simple" bots in a simple way.
 
 A "simple bot" can be any bot which:
 - Takes a user intent and gives back an answer, or takes an action for the user
@@ -14,7 +14,7 @@ That's really **not** simple.
 I started writing some code to reduce repeated work for myself when creating simple bots. Now I think it might be helpful to others as well.
 
 # Is it really simple?
-Let's see. As a prerequisite, you need to implement IIntentService which does the intent parsing. This is to map user input to known intent name string. You can use built in ```LuisService``` if you want.
+Let's see. As a prerequisite, you need to implement IIntentService which does the intent parsing. This is to map user input to known intent name string. You can use LUIS with built-in ```LuisService```, or create your own intent service.
 ## Identify an intent and take an action
 1. Define a custom intent context. Override the IntentName getter.
 ```
@@ -53,6 +53,7 @@ Just implement and register a handler with built in ```FallbackContext```.
 ## One of my intent requires user authentication
 OK. If you are using Azure Bot Servie OAuthCard - simply inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```.
 
+Check the sample project for more details, especially Startup.cs and files under /sample/Areas.
 
 # Enjoy!
 
