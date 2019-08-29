@@ -1,5 +1,5 @@
-# Motivation: Simple bot made simple
-Zyin.IntentBot is an Asp.Net Core 2 extension library for Botframework V4 to help you build "simple" bots in a simple way.
+# Build simple bots in a simple way
+zyin.intentbot is an Asp.Net Core 2 extension library for Botframework V4 to help you build "simple" bots in a simple way.
 
 A "simple bot" can be any bot which:
 - Takes a user intent and gives back an answer, or takes an action for the user
@@ -32,22 +32,25 @@ Let's see. As a prerequisite, you need to implement IIntentService which does th
   services.AddSimpleIntent<GreetingsContext, GreetingsIntentHandler>();
 ```
 **That's it**.
-Example: [GreetingsIntent.cs](https://github.com/sidecus/Zyin.IntentBot/blob/master/sample/Areas/GreetingsIntent.cs)
+Example: [GreetingsIntent.cs](https://github.com/sidecus/zyin.intentbot/blob/master/sample/Areas/GreetingsIntent.cs)
 
 ## Need user input before taking the action?
-Sure. Just define your required user input as properties in your IntentContext class, and annotate with ```PromptPropertyAttribute```.
+Sure. Just define required user input as properties in your IntentContext class, and annotate with ```PromptPropertyAttribute```.
 ```
-[PromptProperty(prompt:"What's the first value (between 1 and 10)?", promptProvider:typeof(SampleNumberPromptProvider), order: 0)]
+[PromptProperty(prompt:"First value (1 to 10)?", promptProvider:typeof(SampleNumberPromptProvider), order: 0)]
 public int? First { get; set; }
+
+[PromptProperty("Second value (any int32)?", order: 1)]
+public int? Second { get; set; }
 ```
-Next you need to register it as an user input intent:
+After defining the IntentContext, register it as an **user input intent**:
 ```
   services.AddUserInputIntent<AddNumberIntentContext, AddNumberIntentHandler>();
 ```
 Zyin.IntentBot intent factory will automatically handle the logic for you to ask user for inputs, validate the value, and invoke your intent handler when all info are there.
 Example: [AddNumberIntent.cs](https://github.com/sidecus/Zyin.IntentBot/blob/master/sample/Areas/AddNumberIntent.cs)
 
-You can also implement your own property validation via ```TypedPromptProvider```. [Example](https://github.com/sidecus/Zyin.IntentBot/blob/master/sample/Areas/SampleNumberPromptProvider.cs)
+You can also implement your own property validation by extending ```TypedPromptProvider```. Example:[SampleNumberPromptProvider.cs](https://github.com/sidecus/zyin.intentbot/blob/master/sample/Areas/SampleNumberPromptProvider.cs)
 
 ## Need to handle unknown intents (catch all scenarios)
 This can be done easily. Just implement and register a handler with built in ```FallbackContext```.
@@ -59,6 +62,15 @@ This can be done easily. Just implement and register a handler with built in ```
 If you are using Azure Bot Servie, good news, it's also simple. Just inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```. Now your intent will trigger the OAuth flow (you'll need to specify the ```OAuthConnectionName``` setting in appSettings.json. I am sure you can figure that part out. :)
 
 Check the sample project for more details, especially Startup.cs and files under /sample/Areas.
+
+## Other helper classes
+There are quite a few helper classes to make your coding even more efficient. This includes:
+- ```ImageIntentResponseIntentHandler``` to handle simple responses with image
+- ```JsonCardResponseIntentHandler``` to handle simple response with static JSON based adaptive card
+- ```JsonAdaptiveCard``` to help produce AdaptiveCard responses from JSON file (with naive formatting capability)
+- ```OBOTokenService``` to exchange AAD token with different services
+- ```AADv2HttpService``` to make it easier to create new AAD Bearer token based RESTful service clients
+- and much more
 
 # Enjoy and Happy Coding!
 
