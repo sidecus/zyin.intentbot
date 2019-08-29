@@ -60,5 +60,5 @@ If you are using Azure Bot Servie, good news, it's also simple. Just inherit you
 
 Check the sample project for more details, especially Startup.cs and files under /sample/Areas.
 
-# Enjoy!
+# Enjoy and Happy Coding!
 
