@@ -6,6 +6,7 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Zyin.IntentBot;
+    using Zyin.IntentBot.Bot;
     using Zyin.IntentBot.Config;
     using Zyin.IntentBot.Intent;
     using Zyin.IntentBot.Services;
@@ -35,10 +36,9 @@
             // Add intent service
             services.AddSingleton<IIntentService, SampleIntentService>();
 
-            // Add intent bot with user state.
-            services.AddIntentBot<SampleBot, SampleUserInfo>();
-            // Or just below if you don't have any user state to save
-            // services.AddIntentBot<SampleBot>();
+            // Add intent bot and sample user input
+            services.AddIntentBot<SampleBot>();
+            services.AddSingleton<UserStateManager<SampleUserInfo>>();
 
             // Register intents
             services.AddSimpleIntent<FallbackContext, SampleFallbackHandler>();

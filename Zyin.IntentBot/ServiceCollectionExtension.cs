@@ -16,18 +16,6 @@ namespace Zyin.IntentBot
     public static class ServiceCollectionExtension
     {
         /// <summary>
-        /// Add intent factory, intent handler factory, as well as fall back intent and handler
-        /// </summary>
-        /// <param name="services">service collection</param>
-        /// <typeparam name="TBot">type of bot</param>
-        /// <returns>service collection</returns>
-        public static IServiceCollection AddIntentBot<TBot>(this IServiceCollection services)
-            where TBot : DialogBot<IntentDialog>
-        {
-            return services.AddIntentBot<TBot, UserInfo>();
-        }
-
-        /// <summary>
         /// Add intent factory, intent handler factory, as well as fall back intent and handler.
         /// User can specify a TUserInfo for user state
         /// </summary>
@@ -35,9 +23,8 @@ namespace Zyin.IntentBot
         /// <typeparam name="TBot">type of bot</param>
         /// <typeparam name="TUser">type of user info to save into UserState</param>
         /// <returns>service collection</returns>
-        public static IServiceCollection AddIntentBot<TBot, TUser>(this IServiceCollection services)
+        public static IServiceCollection AddIntentBot<TBot>(this IServiceCollection services)
             where TBot : DialogBot<IntentDialog>
-            where TUser : UserInfo
         {
             // Add required/optional services for the bot
             // 1. File content service for json cards
@@ -46,7 +33,7 @@ namespace Zyin.IntentBot
             services.AddSingleton<IAADv2OBOTokenService, AADv2OBOTokenService>();
 
             // Add intent bot
-            services.AddIntentBotInternal<TBot, TUser>();
+            services.AddIntentBotInternal<TBot>();
 
             // Add singleton intent factory and intent handler factory
             services.AddSingleton<IIntentFactory, IntentFactory>();
@@ -104,11 +91,9 @@ namespace Zyin.IntentBot
         /// </summary>
         /// <param name="services"></param>
         /// <typeparam name="TBot">type of bot</param>
-        /// <typeparam name="TUser">type of user info to save into UserState</param>
         /// <returns></returns>
-        private static IServiceCollection AddIntentBotInternal<TBot, TUser>(this IServiceCollection services)
+        private static IServiceCollection AddIntentBotInternal<TBot>(this IServiceCollection services)
             where TBot : DialogBot<IntentDialog>
-            where TUser : UserInfo
         {
             // Register main dialogs.
             services.AddSingleton<OAuthDialog>();
@@ -118,8 +103,8 @@ namespace Zyin.IntentBot
             // Also register singleton dialog state accessors and user state accessors with default user info.
             services.AddSingleton<ConversationState>();
             services.AddSingleton<UserState>();
-            services.AddSingleton<DialogStateAccessors>();
-            services.AddSingleton<UserStateAccessors<TUser>>();
+            services.AddSingleton<DialogStateManager>();
+            services.AddSingleton<UserTokenStateManager>();
 
             // By default use memory storage. Real implementation should register a different IStorage.
             services.AddSingleton<IStorage, MemoryStorage>();

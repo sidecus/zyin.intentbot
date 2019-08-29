@@ -3,9 +3,9 @@ namespace sample.Areas
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Bot.Builder;
+    using Zyin.IntentBot.Bot;
     using Zyin.IntentBot.Intent;
     using Zyin.IntentBot.Prompt;
-    using Zyin.IntentBot.Bot;
     using sample.Bot;
 
     /// <summary>
@@ -48,15 +48,15 @@ namespace sample.Areas
         /// <summary>
         /// User state accessor
         /// </summary>
-        private UserStateAccessors<SampleUserInfo> userStateAccessors;
+        private UserStateManager<SampleUserInfo> userInfoManager;
 
         /// <summary>
         /// Initialize a new instance of the AddNumberIntentHandler
         /// </summary>
         /// <param name="userStateAccessors"></param>
-        public AddNumberIntentHandler(UserStateAccessors<SampleUserInfo> userStateAccessors)
+        public AddNumberIntentHandler(UserStateManager<SampleUserInfo> userInfoManager)
         {
-            this.userStateAccessors = userStateAccessors;
+            this.userInfoManager = userInfoManager;
         }
         
         /// <summary>
@@ -76,9 +76,9 @@ namespace sample.Areas
             if (intentContext.MemorizeResult.Value)
             {
                 // Save result to user state since user wants to memorize it
-                var userInfo = await this.userStateAccessors.UserInfoAccessor.GetAsync(turnContext, () => new SampleUserInfo());
-                userInfo.PreviousSumbResult = result;
-                await this.userStateAccessors.UserInfoAccessor.SetAsync(turnContext, userInfo);
+                var userInfo = await this.userInfoManager.GetAsync(turnContext, cancellationToken);
+                userInfo.SavedSumResult = result;
+                await this.userInfoManager.SetAsync(turnContext, userInfo, cancellationToken);
             }
 
             // Output result

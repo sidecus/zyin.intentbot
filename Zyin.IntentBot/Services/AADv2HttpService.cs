@@ -110,6 +110,29 @@ namespace Zyin.IntentBot.Services
         }
 
         /// <summary>
+        /// Make a HTTP PUT call
+        /// </summary>
+        /// <param name="uri"></param>
+        /// <param name="Func<HttpResponseMessage"></param>
+        /// <param name="successCallback"></param>
+        /// <param name="errorCallback"></param>
+        /// <typeparam name="T">api return type</typeparam>
+        /// <returns>task of T</returns>
+        protected async Task<T> PutHttpAsync<T>(
+            string uri,
+            HttpContent content,
+            Func<HttpResponseMessage, Task<T>> successCallback,
+            Func<HttpResponseMessage, Task<T>> errorCallback = null)
+        {
+            return await this.MakeHttpCallAsync(
+                HttpMethod.Put,
+                uri,
+                content,
+                successCallback,
+                errorCallback);
+        }
+
+        /// <summary>
         /// Make an api call
         /// </summary>
         /// <param name="method"></param>
@@ -145,13 +168,8 @@ namespace Zyin.IntentBot.Services
             errorCallback = errorCallback ?? (response => this.ProcessError<T>(response));
             
             // Make the call
-            using (var request = this.CreateHttpRequestMessage(method, uri))
+            using (var request = this.CreateHttpRequestMessage(method, uri, content))
             {
-                if (content != null)
-                {
-                    request.Content = content;
-                }
-
                 using (var response = await this.httpClient.SendAsync(request))
                 {
                     if (response.IsSuccessStatusCode)
@@ -172,13 +190,19 @@ namespace Zyin.IntentBot.Services
         /// </summary>
         /// <param name="method">http method</param>
         /// <param name="uri">request relative uri</param>
-        /// <param name="appToken">token to our own app</param>
+        /// <param name="content">http content if any</param>
         /// <returns>http request message</returns>
-        private HttpRequestMessage CreateHttpRequestMessage(HttpMethod method, string uri)
+        private HttpRequestMessage CreateHttpRequestMessage(HttpMethod method, string uri, HttpContent content = null)
         {
+            if (method == HttpMethod.Get && content != null)
+            {
+                throw new InvalidOperationException("Http Get but there is content being sent");
+            }
+
             // Create request and set authorization header on it
             var request = new HttpRequestMessage(method, uri);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.UserToken);
+            request.Content = content;
             return request;
         }
 

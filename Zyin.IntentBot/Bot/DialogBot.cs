@@ -18,7 +18,7 @@ namespace Zyin.IntentBot.Bot
         private static readonly string TeamsChannelId = "msteams";
         private static readonly string TeamsSignInActivityName = "signin/verifyState";
         protected readonly Dialog dialog;
-        protected readonly DialogStateAccessors dialogStateAccessors;
+        protected readonly DialogStateManager dialogStateManager;
         protected readonly ILogger logger;
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace Zyin.IntentBot.Bot
         /// <param name="userState"></param>
         /// <param name="dialog"></param>
         /// <param name="logger"></param>
-        public DialogBot(DialogStateAccessors stateAccessors, T dialog, ILogger logger)
+        public DialogBot(DialogStateManager dialogStateManager, T dialog, ILogger logger)
         {
-            this.dialogStateAccessors = stateAccessors ?? throw new ArgumentNullException(nameof(stateAccessors));
+            this.dialogStateManager = dialogStateManager ?? throw new ArgumentNullException(nameof(dialogStateManager));
             this.dialog = dialog ?? throw new ArgumentNullException(nameof(dialog));;
             this.logger = logger;
         }
@@ -134,7 +134,7 @@ namespace Zyin.IntentBot.Bot
         /// <returns>task</returns>
         protected async Task RunDialog(ITurnContext turnContext, CancellationToken cancellationToken)
         {
-            await this.dialog.RunAsync(turnContext, this.dialogStateAccessors.DialogStateAccessor, cancellationToken);
+            await this.dialog.RunAsync(turnContext, this.dialogStateManager.StateAccessor, cancellationToken);
         }
     }
 }

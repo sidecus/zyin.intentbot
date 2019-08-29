@@ -5,8 +5,8 @@ namespace sample.Bot
     /// <summary>
     /// sample user info
     /// </summary>
-    public class SampleUserInfo : UserInfo
+    public class SampleUserInfo
     {
-        public int? PreviousSumbResult { get; set; }
+        public int? SavedSumResult { get; set; }
     }
 }

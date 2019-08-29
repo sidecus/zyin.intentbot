@@ -82,10 +82,9 @@ namespace Zyin.IntentBot.Dialog
             // Get intent and intent context instances
             var intentContext = this.intentFactory.CreateIntentContext(intentString, query);
 
-            // Check whether we need auth
             if (intentContext.RequireAuth)
             {
-                // Start auth flow
+                // Start auth flow. OAuthDialog will return intentContxt (or null if failed) as Result
                 return await stepContext.BeginDialogAsync(nameof(OAuthDialog), intentContext, cancellationToken);
             }
             else
@@ -104,14 +103,13 @@ namespace Zyin.IntentBot.Dialog
         private async Task<DialogTurnResult> GetUserInputStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var intentContext = stepContext.Result as IntentContext;
-            if (intentContext.RequireAuth && intentContext?.AppToken == null)
+
+            if (intentContext == null)
             {
-                // Auth didn't succeed. End dialog
-                this.logger.LogWarning($"{intentContext.GetType()} requires auth but auth didn't succeed");
+                // If intentContext is null, it must be the case that auth didn't succeed. End directly.
                 return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
             }
-
-            if (intentContext.HasDialog)
+            else if (intentContext.HasDialog)
             {
                 // Known intent with dialog, run the subsequent dialog based to collect additional info
                 return await stepContext.BeginDialogAsync(intentContext.DialogId, intentContext, cancellationToken);
@@ -131,21 +129,18 @@ namespace Zyin.IntentBot.Dialog
         /// <returns>dialog turn result</returns>
         private async Task<DialogTurnResult> ExecuteTaskStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            // 1. If it's a known intent or fallback intent, stepContext.Result is a regular IntentContext
-            // 2. If the child dialog was cancelled or the user failed to confirm, stepContext.Result will be null.
-            // Below branches will handle them accordingly
             var intentContext = stepContext.Result as IntentContext;
 
-            if (intentContext != null)
+            if (intentContext == null)
             {
-                // Get corresponding handler and process the intent
-                var handler = this.intentHandlerFactory.GetIntentHandler(intentContext);
-                await handler.ProcessIntentAsync(stepContext.Context, intentContext, cancellationToken);
+                // If the child dialog was cancelled or the user failed to confirm, stepContext.Result will be null.
+                await stepContext.Context.SendActivityAsync(MessageFactory.Text("Thank you."), cancellationToken);
             }
             else
             {            
-                // User canceled or abandoned the conversation
-                await stepContext.Context.SendActivityAsync(MessageFactory.Text("Thank you."), cancellationToken);
+                // Get corresponding handler and process the intent
+                var handler = this.intentHandlerFactory.GetIntentHandler(intentContext);
+                await handler.ProcessIntentAsync(stepContext.Context, intentContext, cancellationToken);
             }
 
             // We are done. End the current dialog

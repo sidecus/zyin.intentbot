@@ -30,8 +30,8 @@ namespace sample.Bot
         /// <param name="dialog"></param>
         /// <param name="cardService"></param>
         /// <param name="logger"></param>
-        public SampleBot(DialogStateAccessors dialogStateAccessors, IntentDialog dialog, JsonAdaptiveCardService cardService, ILogger<SampleBot> logger)
-            : base(dialogStateAccessors, dialog, logger)
+        public SampleBot(DialogStateManager dialogStateManager, IntentDialog dialog, JsonAdaptiveCardService cardService, ILogger<SampleBot> logger)
+            : base(dialogStateManager, dialog, logger)
         {
             this.cardService = cardService;
         }

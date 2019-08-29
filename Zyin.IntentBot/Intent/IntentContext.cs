@@ -14,12 +14,6 @@ namespace Zyin.IntentBot.Intent
         public string DialogId { get; set; }
 
         /// <summary>
-        /// Access token to the AAD app for the bot - only needed when RequireAuth is true, otherwise ignored.
-        /// </summary>
-        /// <value></value>
-        public TokenResponse TokenResponse { get; set; }
-
-        /// <summary>
         /// The user query
         /// </summary>
         /// <value>gets the user query</value>
@@ -29,11 +23,6 @@ namespace Zyin.IntentBot.Intent
         /// Does the context require dialog?
         /// </summary>
         public bool HasDialog => !string.IsNullOrWhiteSpace(this.DialogId);
-
-        /// <summary>
-        /// App token
-        /// </summary>
-        public string AppToken => this.RequireAuth ? this.TokenResponse?.Token : null;
 
         /// <summary>
         /// Does this intent context require authentication?

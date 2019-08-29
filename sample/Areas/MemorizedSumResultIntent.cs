@@ -21,20 +21,20 @@ namespace sample.Areas
 
     public class MemorizedSumResultIntentHandler : IntentHandler<MemorizedSumResultIntentContext>
     {
-        private UserStateAccessors<SampleUserInfo> userStateAccessors;
+        private UserStateManager<SampleUserInfo> userInfoManager;
 
-        public MemorizedSumResultIntentHandler(UserStateAccessors<SampleUserInfo> userStateAccessors)
+        public MemorizedSumResultIntentHandler(UserStateManager<SampleUserInfo> userInfoManager)
         {
-            this.userStateAccessors = userStateAccessors;
+            this.userInfoManager = userInfoManager;
         }
         
         protected override async Task ProcessIntentInternalAsync(ITurnContext turnContext, MemorizedSumResultIntentContext intentContext, CancellationToken cancellationToken)
         {
             // Try to get the previous result
-            var userInfo = await this.userStateAccessors.UserInfoAccessor.GetAsync(turnContext);
-            var message = userInfo?.PreviousSumbResult == null ?
+            var userInfo = await this.userInfoManager.GetAsync(turnContext, cancellationToken);
+            var message = userInfo?.SavedSumResult == null ?
                 "There is nothing saved in memory." :
-                $"The previous result is {userInfo.PreviousSumbResult}";
+                $"The previous result is {userInfo.SavedSumResult}";
 
             // Output result
             await turnContext.SendActivityAsync(MessageFactory.Text(message), cancellationToken);
