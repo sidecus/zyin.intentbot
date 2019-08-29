@@ -37,7 +37,7 @@ Example: [GreetingsIntent.cs](https://github.com/sidecus/Zyin.IntentBot/blob/mas
 ## Need user input before taking the action?
 Sure. Just define your required user input as properties in your IntentContext class, and annotate with ```PromptPropertyAttribute```.
 ```
-[PromptProperty("What's the first value (between 1 and 10)?", "Value should be between 1 and 10", promptProvider:typeof(SampleNumberPromptProvider), order: 0)]
+[PromptProperty(prompt:"What's the first value (between 1 and 10)?", promptProvider:typeof(SampleNumberPromptProvider), order: 0)]
 public int? First { get; set; }
 ```
 Next you need to register it as an user input intent:
