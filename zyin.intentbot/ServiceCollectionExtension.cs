@@ -53,13 +53,13 @@ namespace Zyin.IntentBot
         /// <typeparam name="THandler">intent handler</typeparam>
         /// <returns></returns>
         public static IServiceCollection AddSimpleIntent<TContext, THandler>(this IServiceCollection services)
-            where TContext: IntentContext, new()
+            where TContext: IntentContext
             where THandler: IntentHandler<TContext>
         {
-            // Add singleton intent and transient intent handler.
-            // Intent context is not registered, but will be created on the fly (hence transient just not via DI) for each new conversation.
-            services.AddSingleton<IIntent, Intent<TContext>>();
+            // Add transient intent context, transient intent handler, and singleton intent
+            services.AddTransient<TContext>();
             services.AddTransient<IntentHandler<TContext>, THandler>();
+            services.AddSingleton<IIntent, Intent<TContext>>();
 
             return services;
         }
@@ -72,16 +72,17 @@ namespace Zyin.IntentBot
         /// <typeparam name="THandler">intent handler</typeparam>
         /// <returns></returns>
         public static IServiceCollection AddUserInputIntent<TContext, THandler>(this IServiceCollection services)
-            where TContext: IntentContext, new()
+            where TContext: IntentContext
             where THandler: IntentHandler<TContext>
         {
-            // Add singleton user input intent and transient intent handlers.
+            // Add transient intent context, transient intent handler, and singleton intent
             // User input intent require a few other things, including singleton prompt manager and singleton user input dialog.
             // Register them as well.
+            services.AddTransient<TContext>();
+            services.AddTransient<IntentHandler<TContext>, THandler>();
             services.AddSingleton<PromptManager<TContext>>();
             services.AddSingleton<UserInputDialog<TContext>>();
             services.AddSingleton<IIntent, UserInputIntent<TContext>>();
-            services.AddTransient<IntentHandler<TContext>, THandler>();
 
             return services;
         }

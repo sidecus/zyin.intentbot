@@ -42,7 +42,7 @@ namespace Zyin.IntentBot.Services
         /// <summary>
         /// user token to the target service
         /// </summary>
-        public string UserToken { get; private set; }
+        public string OboToken { get; private set; }
 
         /// <summary>
         /// Gets the api scopes
@@ -57,9 +57,9 @@ namespace Zyin.IntentBot.Services
         public async Task InitializeTokenAsync(string sourceToken)
         {
             // We only try to get token again if it's not set.
-            if (this.UserToken == null)
+            if (this.OboToken == null)
             {
-                this.UserToken = await this.tokenService.GetOnBehalfOfTokenAsync(sourceToken, this.Scopes);
+                this.OboToken = await this.tokenService.GetOnBehalfOfTokenAsync(sourceToken, this.Scopes);
                 this.logger.LogInformation($"token acquired for {this.GetType().Name}");
             }
         }
@@ -159,13 +159,13 @@ namespace Zyin.IntentBot.Services
                 throw new ArgumentNullException(nameof(successCallback));
             }
 
-            if (string.IsNullOrWhiteSpace(this.UserToken))
+            if (string.IsNullOrWhiteSpace(this.OboToken))
             {
                 throw new InvalidOperationException("user token has not been set yet");
             }
 
             // if error callback is not provided, use the default one.
-            errorCallback = errorCallback ?? (response => this.ProcessError<T>(response));
+            errorCallback = errorCallback ?? (response => this.ProcessErrorDefault<T>(response));
             
             // Make the call
             using (var request = this.CreateHttpRequestMessage(method, uri, content))
@@ -201,7 +201,7 @@ namespace Zyin.IntentBot.Services
 
             // Create request and set authorization header on it
             var request = new HttpRequestMessage(method, uri);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.UserToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.OboToken);
             request.Content = content;
             return request;
         }
@@ -212,7 +212,7 @@ namespace Zyin.IntentBot.Services
         /// <param name="response"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        private Task<T> ProcessError<T>(HttpResponseMessage response)
+        private Task<T> ProcessErrorDefault<T>(HttpResponseMessage response)
         {
             if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
             {

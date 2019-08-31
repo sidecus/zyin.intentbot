@@ -54,7 +54,7 @@ namespace Zyin.IntentBot.Intent
     /// </summary>
     /// <typeparam name="TContext">Intent context type</typeparam>
     public class Intent<TContext> : IIntent
-        where TContext : IntentContext, new()
+        where TContext : IntentContext
     {
         /// <summary>
         /// Whether the intent is a fallback intent.
@@ -62,14 +62,23 @@ namespace Zyin.IntentBot.Intent
         private static readonly bool IsFallback = typeof(TContext).IsSubclassOf(typeof(BaseFallbackContext));
 
         /// <summary>
+        /// service provider
+        /// </summary>
+        protected IServiceProvider serviceProvider;
+
+        /// <summary>
         /// Initializes a new intent which requires user input
         /// </summary>
         /// <param name="intentName">intent name</param>
-        public Intent()
+        /// <param name="serviceProvider">service provider</param>
+        public Intent(IServiceProvider serviceProvider)
         {
-            // Crate a temporar intent context to get intent name
-            var tempContext = new TContext();
-            if (string.IsNullOrWhiteSpace(tempContext.IntentName))
+            // Capture service provider
+            this.serviceProvider = serviceProvider;
+
+            // Get a temporary context instance to retrieve the intent name
+            var tempContext = this.serviceProvider.GetService(typeof(TContext)) as TContext;
+            if (string.IsNullOrWhiteSpace(tempContext?.IntentName))
             {
                 throw new ArgumentNullException($"{typeof(TContext).Name} doesn't have valid intent name defined");
             }
@@ -119,11 +128,11 @@ namespace Zyin.IntentBot.Intent
         /// <returns>intent context</returns>
         public IntentContext CreateIntentContext(string query)
         {
-            return new TContext()
-            {
-                DialogId = this.DialogId,
-                Query = query,
-            };
+            var context = this.serviceProvider.GetService(typeof(TContext)) as TContext;
+            context.DialogId = this.DialogId;
+            context.Query = query ?? throw new ArgumentNullException(nameof(query));
+
+            return context;
         }
     }
 }

@@ -1,5 +1,6 @@
 namespace Zyin.IntentBot.Intent
 {
+    using System;
     using Zyin.IntentBot.Dialog;
 
     /// <summary>
@@ -7,13 +8,14 @@ namespace Zyin.IntentBot.Intent
     /// </summary>
     /// <typeparam name="TContext">The context object type which the dialog needs to capture</typeparam>
     public sealed class UserInputIntent<TContext> : Intent<TContext>
-        where TContext: IntentContext, new()
+        where TContext: IntentContext
     {
         /// <summary>
         /// Initializes a new UserInputIntent with standard UserInputDialog
         /// </summary>
         /// <param name="dialog"></param>
-        public UserInputIntent(UserInputDialog<TContext> dialog)
+        public UserInputIntent(IServiceProvider serviceProvider, UserInputDialog<TContext> dialog)
+            : base(serviceProvider)
         {
             // Notes - all intents are singleton. So Dialogs should also be registered as singletons.
             // This means it doesn't maintain any transient state by itself!
