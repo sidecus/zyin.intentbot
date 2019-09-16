@@ -1,6 +1,6 @@
 namespace Zyin.IntentBot.Intent
 {
-    using Microsoft.Bot.Schema;
+    using System.IdentityModel.Tokens.Jwt;
 
     /// <summary>
     /// Base class for known intent context.
@@ -23,6 +23,11 @@ namespace Zyin.IntentBot.Intent
         /// Does the context require dialog?
         /// </summary>
         public bool HasDialog => !string.IsNullOrWhiteSpace(this.DialogId);
+
+        /// <summary>
+        /// Jwt security token - only valid if RequireAuth is true
+        /// </summary>
+        public string AppToken { get; set; }
 
         /// <summary>
         /// Does this intent context require authentication?

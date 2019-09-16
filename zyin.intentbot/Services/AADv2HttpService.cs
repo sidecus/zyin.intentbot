@@ -7,7 +7,7 @@ namespace Zyin.IntentBot.Services
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Base class for Bearer token based RESTful services using AADv2 OBO tokens.
+    /// Base class for Bearer token based RESTful services using AADv2 tokens.
     /// </summary>
     public abstract class AADv2HttpService
     {
@@ -15,11 +15,6 @@ namespace Zyin.IntentBot.Services
         /// HttpClient reference
         /// </summary>
         protected readonly HttpClient httpClient;
-
-        /// <summary>
-        /// Token exchange service
-        /// </summary>
-        private readonly IAADv2OBOTokenService tokenService;
 
         /// <summary>
         /// logger object
@@ -30,38 +25,26 @@ namespace Zyin.IntentBot.Services
         /// Initializes a new instance of the <see cref="AADv2HttpService" /> class
         /// </summary>
         /// <param name="httpClient">Injected HttpClient for the required api</param>
-        /// <param name="tokenService">token service</param>
         /// <param name="logger">logger for this class</param>
-        public AADv2HttpService(HttpClient httpClient, IAADv2OBOTokenService tokenService, ILogger logger)
+        public AADv2HttpService(HttpClient httpClient, ILogger logger)
         {
             this.httpClient = httpClient;
-            this.tokenService = tokenService;
             this.logger = logger;
         }
 
         /// <summary>
         /// user token to the target service
         /// </summary>
-        public string OboToken { get; private set; }
-
-        /// <summary>
-        /// Gets the api scopes
-        /// </summary>
-        protected virtual string[] Scopes { get; }
+        public string AppToken { get; private set; }
 
         /// <summary>
         /// Initialize OBO token based on the source token
         /// </summary>
-        /// <param name="sourceToken">source token to our own resource. It's used as user assertion to get target resource token</param>
+        /// <param name="appToken">source token to our own resource. It's used as user assertion to get target resource token</param>
         /// <returns>task</returns>
-        public async Task InitializeTokenAsync(string sourceToken)
+        public void InitializeTokenAsync(string appToken)
         {
-            // We only try to get token again if it's not set.
-            if (this.OboToken == null)
-            {
-                this.OboToken = await this.tokenService.GetOnBehalfOfTokenAsync(sourceToken, this.Scopes);
-                this.logger.LogInformation($"token acquired for {this.GetType().Name}");
-            }
+            this.AppToken = appToken ?? throw new ArgumentNullException(nameof(appToken));
         }
 
         /// <summary>
@@ -159,7 +142,7 @@ namespace Zyin.IntentBot.Services
                 throw new ArgumentNullException(nameof(successCallback));
             }
 
-            if (string.IsNullOrWhiteSpace(this.OboToken))
+            if (string.IsNullOrWhiteSpace(this.AppToken))
             {
                 throw new InvalidOperationException("user token has not been set yet");
             }
@@ -201,7 +184,7 @@ namespace Zyin.IntentBot.Services
 
             // Create request and set authorization header on it
             var request = new HttpRequestMessage(method, uri);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.OboToken);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.AppToken);
             request.Content = content;
             return request;
         }

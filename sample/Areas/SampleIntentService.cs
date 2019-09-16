@@ -14,6 +14,7 @@ namespace sample.Areas
         public static readonly string Intent_Sum = "sum";
         public static readonly string Intent_BookingFlight = "bookFlight";
         public static readonly string Intent_MemorizedSum = "previousSumResult";
+        public static readonly string Intent_WhoAmI = "whoAmI";
 
         /// <summary>
         /// Run a query to get the intent string
@@ -36,6 +37,9 @@ namespace sample.Areas
                     return Task.FromResult(Intent_MemorizedSum);
                 case "flight":
                     return Task.FromResult(Intent_BookingFlight);
+                case "who am i":
+                case "whoami":
+                    return Task.FromResult(Intent_WhoAmI);
                 default:
                     return Task.FromResult<string>(null);
             }

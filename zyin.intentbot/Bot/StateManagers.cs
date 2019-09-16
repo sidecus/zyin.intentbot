@@ -69,9 +69,9 @@ namespace Zyin.IntentBot.Bot
     /// <summary>
     /// User token state manager
     /// </summary>
-    public class UserTokenStateManager : UserStateManager<UserTokenInfo>
+    public class UserInfoStateManager : UserStateManager<UserInfo>
     {
-        public UserTokenStateManager(UserState userState) : base(userState) {}
+        public UserInfoStateManager(UserState userState) : base(userState) {}
     }
 
     /// <summary>

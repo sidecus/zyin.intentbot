@@ -1,5 +1,6 @@
 ﻿namespace sample
 {
+    using System;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,13 @@
             services.Configure<BotConfig>(Configuration);
             services.Configure<LuisConfig>(Configuration);
             services.Configure<OAuthConfig>(Configuration);
+
+            // Configure http client for graph service
+            services.AddHttpClient<GraphService>(client =>
+            {
+                client.BaseAddress = new Uri(GraphService.BaseUri);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
             
             // Add intent service
             services.AddSingleton<IIntentService, SampleIntentService>();
@@ -43,6 +51,7 @@
             // Register intents
             services.AddSimpleIntent<FallbackContext, SampleFallbackHandler>();
             services.AddSimpleIntent<GreetingsContext, GreetingsIntentHandler>();
+            services.AddSimpleIntent<WhoAmIContext, WhoAmIIntentHandler>();
             services.AddUserInputIntent<AddNumberIntentContext, AddNumberIntentHandler>();
             services.AddSimpleIntent<MemorizedSumResultIntentContext, MemorizedSumResultIntentHandler>();
             services.AddUserInputIntent<BookFlightIntentContext, BookFlightIntentHandler>();

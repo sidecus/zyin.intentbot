@@ -3,7 +3,6 @@ namespace sample.Areas
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Bot.Builder.Dialogs;
-    using Zyin.IntentBot.Intent;
     using Zyin.IntentBot.Prompt;
 
     /// <summary>

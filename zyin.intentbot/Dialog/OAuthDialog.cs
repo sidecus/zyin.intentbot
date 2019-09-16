@@ -1,6 +1,8 @@
 namespace Zyin.IntentBot.Dialog
 {
     using System;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -25,7 +27,7 @@ namespace Zyin.IntentBot.Dialog
         /// <summary>
         /// user token manager
         /// </summary>
-        protected readonly UserTokenStateManager tokenManager;
+        protected readonly UserInfoStateManager userInfoStateManager;
 
         /// <summary>
         /// ILogger instance
@@ -37,12 +39,12 @@ namespace Zyin.IntentBot.Dialog
         /// This constructor will be used in DI.
         /// </summary>
         /// <param name="options"></param>
-        /// <param name="tokenManager"></param>
+        /// <param name="userInfoStateManager"></param>
         /// <param name="logger"></param>
-        public OAuthDialog(IOptions<OAuthConfig> options, UserTokenStateManager tokenManager, ILogger<OAuthDialog> logger)
+        public OAuthDialog(IOptions<OAuthConfig> options, UserInfoStateManager userInfoStateManager, ILogger<OAuthDialog> logger)
             : base(nameof(OAuthDialog))
         {
-            this.tokenManager = tokenManager ?? throw new ArgumentNullException(nameof(tokenManager));
+            this.userInfoStateManager = userInfoStateManager ?? throw new ArgumentNullException(nameof(userInfoStateManager));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.oAuthPromptSettings = new OAuthPromptSettings()
             {
@@ -112,20 +114,9 @@ namespace Zyin.IntentBot.Dialog
         /// <returns></returns>
         private async Task<DialogTurnResult> StartAuthStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var tokenInfo = await this.tokenManager.GetAsync(stepContext.Context, cancellationToken);
-            var tokenResponse = tokenInfo.AppTokenResponse;
-            if (tokenResponse?.IsTokenValid() ?? false)
-            {
-                // Use cached token
-                this.logger.LogInformation("Use token in cache.");
-                return await stepContext.NextAsync(tokenResponse, cancellationToken);
-            }
-            else
-            {
-                // Start auth flow
-                this.logger.LogInformation("Starting OAuth Prompt.");
-                return await stepContext.BeginDialogAsync(nameof(OAuthPrompt), null, cancellationToken);
-            }
+            // Start auth flow
+            this.logger.LogInformation("Starting OAuth Prompt.");
+            return await stepContext.BeginDialogAsync(nameof(OAuthPrompt), null, cancellationToken);
         }
 
         /// <summary>
@@ -137,23 +128,34 @@ namespace Zyin.IntentBot.Dialog
         private async Task<DialogTurnResult> EnsureValidTokenStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var tokenResponse = stepContext.Result as TokenResponse;
-            if (!tokenResponse?.IsTokenValid() ?? false)
+            TokenResponse tokenToReturn = null;
+
+            if (tokenResponse?.Token != null)
             {
-                // we have a token but it has expired. This is a bug in Azure bot service.
-                // We need to work around it by logging user out first and then ask for logging in again
-                var userId = stepContext.Context.Activity?.From?.Id;
-                this.logger.LogWarning($"Token for user {userId} expired. Will logout and let user retry.");
+                var jwtToken = new JwtSecurityToken(tokenResponse.Token);
 
-                // Sign user out
-                await OAuthDialog.SignOutAsync(stepContext.Context, this.oAuthPromptSettings.ConnectionName, this.logger, cancellationToken);
+                // Check token expiration. 5 minutes is industry stand for clock skew
+                if (jwtToken.ValidTo < DateTime.UtcNow.AddMinutes(5))
+                {
+                    // we have a token but it has expired. This seems to be a bug in Azure bot service.
+                    // We need to work around it by logging user out first and then ask for logging in again
+                    var userId = stepContext.Context.Activity?.From?.Id;
+                    this.logger.LogWarning($"Token for user {userId} expired. Will logout and let user retry.");
 
-                // Ask user to sign in again by restarting StartAuthStepAsync
-                await stepContext.Context.SendActivityAsync(MessageFactory.Text("Your token expired. Please sign in again."), cancellationToken);
-                return await this.StartAuthStepAsync(stepContext, cancellationToken);
+                    // Sign user out
+                    await OAuthDialog.SignOutAsync(stepContext.Context, this.oAuthPromptSettings.ConnectionName, this.logger, cancellationToken);
+
+                    // Ask user to sign in again by restarting StartAuthStepAsync
+                    await stepContext.Context.SendActivityAsync(MessageFactory.Text("Your token expired. Please sign in again."), cancellationToken);
+                    return await this.StartAuthStepAsync(stepContext, cancellationToken);
+                }
+
+                // Token is good, set it to the return value
+                tokenToReturn = tokenResponse;
             }
 
             // For all other cases (success or other authentication failure), move to next step.
-            return await stepContext.NextAsync(tokenResponse, cancellationToken);
+            return await stepContext.NextAsync(tokenToReturn, cancellationToken);
         }
 
         /// <summary>
@@ -172,11 +174,13 @@ namespace Zyin.IntentBot.Dialog
             var channelId = stepContext.Context.Activity?.ChannelId;
 
             // Try to save the new token (or clear the value if we didn't get a new one)
-            await this.SaveTokenIfNeededAsync(stepContext.Context, tokenResponse, cancellationToken);
+            await this.SaveUserInfoAsync(stepContext.Context, tokenResponse.Token, cancellationToken);
 
             // Check result
-            if (tokenResponse?.Token != null)
+            var hasValidToken = tokenResponse?.Token != null;
+            if (hasValidToken)
             {
+                intentContext.AppToken = tokenResponse.Token;
                 this.logger.LogInformation($"Acquired token for user {userId} from channel {channelId} for {intentContext.IntentName}.");
             }
             else
@@ -187,25 +191,28 @@ namespace Zyin.IntentBot.Dialog
             }
 
             // End dialog. If we succeed, we'll return the intent context. Otherwise we'll return null
-            var result = tokenResponse?.Token != null ? intentContext : null;
-            return await stepContext.EndDialogAsync(result, cancellationToken: cancellationToken);
+            return await stepContext.EndDialogAsync(hasValidToken ? intentContext : null, cancellationToken: cancellationToken);
         }
 
         /// <summary>
         /// Save token to user state when needed (whether it's a valid new token or it's empty)
         /// </summary>
         /// <param name="turnContext"></param>
-        /// <param name="newResponse"></param>
+        /// <param name="token"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task SaveTokenIfNeededAsync(ITurnContext turnContext, TokenResponse newResponse, CancellationToken cancellationToken)
+        private async Task SaveUserInfoAsync(ITurnContext turnContext, string token, CancellationToken cancellationToken)
         {
-            var tokenInfo = await this.tokenManager.GetAsync(turnContext, cancellationToken);
-            if (tokenInfo.AppTokenResponse?.Token != newResponse?.Token)
+            var jwtToken = new JwtSecurityToken(token);
+            var name = jwtToken.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+            var upn = jwtToken.Claims.FirstOrDefault(c => c.Type == "upn")?.Value;
+            var userInfo = await this.userInfoStateManager.GetAsync(turnContext, cancellationToken);
+            if (userInfo.UserName != name || userInfo.UserPrincipalName != upn)
             {
-                tokenInfo.AppTokenResponse = newResponse;
-                this.logger.LogInformation($"Caching user token for user {turnContext.Activity?.From?.Id}, IsNotNull: {newResponse != null}.");
-                await this.tokenManager.SetAsync(turnContext, tokenInfo, cancellationToken);
+                userInfo.UserName = name;
+                userInfo.UserPrincipalName = upn;
+                this.logger.LogInformation($"Caching info for user {turnContext.Activity?.From?.Id}, upn: {upn}.");
+                await this.userInfoStateManager.SetAsync(turnContext, userInfo, cancellationToken);
             }
         }
     }

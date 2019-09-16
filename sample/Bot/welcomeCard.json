@@ -17,7 +17,7 @@
     },
     {
       "type": "TextBlock",
-      "text": "- hello\r- sum\r- memory\r- flight",
+      "text": "- hello\r- sum\r- memory\r- flight\r- whoami",
       "wrap": true
     }
   ]

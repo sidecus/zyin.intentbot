@@ -15,6 +15,18 @@
     You can test your bot in the Bot Framework Emulator by connecting to http://localhost:3978/api/messages.<br />
 
     <br />
+
+    If you want to test OAuth scenario, please set below settings in appsettings.json.
+    You can use dotnet user secrets if you want to be more secure.
+    <ul>
+        <li><b>MicrosoftAppId</b> - your bot id</li>
+        <li><b>MicrosoftAppPassword</b> - your bot password</li>
+        <li><b>AADAppId</b> - your Azure AD app id. Note this is different from your bot id.</li>
+        <li><b>AADAppPassword</b> - your Azure AD app password.</li>
+        <li><b>OAuthConnectionName</b> - The "OAuth Connection Setting" you configured in your Azure bot registration. Please set scope to "User.Read".</li>
+    </ul>
+
+    <br />
     
     <a href="https://aka.ms/bot-framework-F5-download-emulator" target="_blank">Download the Emulator</a>
 </body>

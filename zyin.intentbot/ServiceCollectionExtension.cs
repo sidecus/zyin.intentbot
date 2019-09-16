@@ -105,7 +105,7 @@ namespace Zyin.IntentBot
             services.AddSingleton<ConversationState>();
             services.AddSingleton<UserState>();
             services.AddSingleton<DialogStateManager>();
-            services.AddSingleton<UserTokenStateManager>();
+            services.AddSingleton<UserInfoStateManager>();
 
             // By default use memory storage. Real implementation should register a different IStorage.
             services.AddSingleton<IStorage, MemoryStorage>();
