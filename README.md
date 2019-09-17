@@ -59,7 +59,7 @@ This can be done easily. Just implement and register a handler with built in ```
 ```
 
 ## My intent requires user authentication
-If you are using Azure Bot Servie, good news, it's also simple. Just inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```. Now your intent will trigger the OAuth flow (you'll need to specify the ```OAuthConnectionName``` setting in appSettings.json. I am sure you can figure that part out. :)
+If you are using Azure Bot Servie, good news, it's also simple. Just inherit your intent context from ```AuthIntentContext``` instead of ```IntentContext```. Now your intent will trigger the OAuth flow. Note, for this to work you'll need to specify bot secrets, your AAD app secrets, as well as  ```OAuthConnectionName``` in the appSettings.json (or via user secrets). Example: [WhoAmIIntent.cs](https://github.com/sidecus/zyin.intentbot/blob/master/sample/Areas/WhoAmIIntent.cs)
 
 Check the sample project for more details, especially Startup.cs and files under /sample/Areas.
 
