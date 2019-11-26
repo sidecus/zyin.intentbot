@@ -170,13 +170,12 @@ namespace Zyin.IntentBot.Dialog
             var intentContext = stepContext.Options as IntentContext;
             var tokenResponse = stepContext.Result as TokenResponse;
 
-            var userId = stepContext.Context.Activity?.From?.Id;
-            var channelId = stepContext.Context.Activity?.ChannelId;
-
             // Try to save the new token (or clear the value if we didn't get a new one)
-            await this.SaveUserInfoAsync(stepContext.Context, tokenResponse.Token, cancellationToken);
+            await this.SaveUserInfoAsync(stepContext.Context, tokenResponse?.Token, cancellationToken);
 
             // Check result
+            var userId = stepContext.Context.Activity?.From?.Id;
+            var channelId = stepContext.Context.Activity?.ChannelId;
             var hasValidToken = tokenResponse?.Token != null;
             if (hasValidToken)
             {
@@ -198,14 +197,14 @@ namespace Zyin.IntentBot.Dialog
         /// Save token to user state when needed (whether it's a valid new token or it's empty)
         /// </summary>
         /// <param name="turnContext"></param>
-        /// <param name="token"></param>
+        /// <param name="token">user token. this can be null</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         private async Task SaveUserInfoAsync(ITurnContext turnContext, string token, CancellationToken cancellationToken)
         {
-            var jwtToken = new JwtSecurityToken(token);
-            var name = jwtToken.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
-            var upn = jwtToken.Claims.FirstOrDefault(c => c.Type == "upn")?.Value;
+            var jwtToken = string.IsNullOrEmpty(token) ? null : new JwtSecurityToken(token);
+            var name = jwtToken?.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+            var upn = jwtToken?.Claims.FirstOrDefault(c => c.Type == "upn")?.Value;
             var userInfo = await this.userInfoStateManager.GetAsync(turnContext, cancellationToken);
             if (userInfo.UserName != name || userInfo.UserPrincipalName != upn)
             {
